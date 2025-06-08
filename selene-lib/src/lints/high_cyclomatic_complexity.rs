@@ -264,11 +264,9 @@ fn count_block_complexity(block: &ast::Block, starting_complexity: u16) -> u16 {
                     complexity = count_expression_complexity(expression, complexity);
                 }
             }
-
             ast::Stmt::Do(do_) => {
                 complexity = count_block_complexity(do_.block(), complexity);
             }
-
             ast::Stmt::FunctionCall(call) => {
                 if let ast::Prefix::Expression(prefix_expression) = call.prefix() {
                     complexity = count_expression_complexity(prefix_expression, complexity)
@@ -277,10 +275,7 @@ fn count_block_complexity(block: &ast::Block, starting_complexity: u16) -> u16 {
                     complexity = count_suffix_complexity(suffix, complexity)
                 }
             }
-
-            // visit_function_declaration already tracks this
             ast::Stmt::FunctionDeclaration(_) => {}
-
             ast::Stmt::GenericFor(generic_for) => {
                 complexity += 1;
                 for expression in generic_for.expressions() {
@@ -288,7 +283,6 @@ fn count_block_complexity(block: &ast::Block, starting_complexity: u16) -> u16 {
                 }
                 complexity = count_block_complexity(generic_for.block(), complexity);
             }
-
             ast::Stmt::If(if_block) => {
                 complexity += 1;
                 complexity = count_expression_complexity(if_block.condition(), complexity);
@@ -302,16 +296,12 @@ fn count_block_complexity(block: &ast::Block, starting_complexity: u16) -> u16 {
                     }
                 }
             }
-
             ast::Stmt::LocalAssignment(local_assignment) => {
                 for expression in local_assignment.expressions() {
                     complexity = count_expression_complexity(expression, complexity);
                 }
             }
-
-            // visit_local_function tracks this
             ast::Stmt::LocalFunction(_) => {}
-
             ast::Stmt::NumericFor(numeric_for) => {
                 complexity += 1;
                 complexity = count_expression_complexity(numeric_for.start(), complexity);
@@ -323,43 +313,43 @@ fn count_block_complexity(block: &ast::Block, starting_complexity: u16) -> u16 {
 
                 complexity = count_block_complexity(numeric_for.block(), complexity);
             }
-
             ast::Stmt::Repeat(repeat_block) => {
                 complexity = count_expression_complexity(repeat_block.until(), complexity + 1);
                 complexity = count_block_complexity(repeat_block.block(), complexity);
             }
-
             ast::Stmt::While(while_block) => {
                 complexity = count_expression_complexity(while_block.condition(), complexity + 1);
                 complexity = count_block_complexity(while_block.block(), complexity);
             }
-
             #[cfg(feature = "roblox")]
             ast::Stmt::CompoundAssignment(compound_expression) => {
                 complexity = count_expression_complexity(compound_expression.rhs(), complexity)
             }
-
             #[cfg(feature = "roblox")]
             ast::Stmt::ExportedTypeDeclaration(_) => {
                 // doesn't contribute dynamic branches
             }
-
             #[cfg(feature = "roblox")]
             ast::Stmt::TypeDeclaration(_) => {
                 // doesn't contain branch points
             }
-
             #[cfg(feature = "lua52")]
             ast::Stmt::Goto(_) => {
                 // not a dynamic branch point itself
             }
-
             #[cfg(feature = "lua52")]
             ast::Stmt::Label(_) => {
                 // not a dynamic branch point itself
             }
-
-            _ => {}
+            ast::Stmt::ExportedTypeFunction(_exported_type_function) => {
+                // Type functions are compile-time constructs and don't contribute to cyclomatic complexity
+                // complexity = count_block_complexity(exported_type_function.body().block(), complexity);
+            }
+            ast::Stmt::TypeFunction(_type_function) => {
+                // Type functions are compile-time constructs and don't contribute to cyclomatic complexity
+                // complexity = count_block_complexity(type_function.body().block(), complexity);
+            }
+            _ => todo!(),
         }
     }
 

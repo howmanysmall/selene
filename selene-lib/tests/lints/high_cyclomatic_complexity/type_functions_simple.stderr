@@ -1,0 +1,7 @@
+error[high_cyclomatic_complexity]: this function has a cyclomatic complexity of 11
+   ┌── type_functions_simple.lua:7:1 ───
+   │
+ 7 │ local function regular_function()
+   │ ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   │
+   = note: consider refactoring this function
