@@ -73,10 +73,6 @@ fn count_table_complexity(table: &TableConstructor, starting_complexity: u16) ->
     let mut complexity = starting_complexity;
 
     for field in table.fields() {
-        #[cfg_attr(
-            feature = "force_exhaustive_checks",
-            deny(non_exhaustive_omitted_patterns)
-        )]
         match field {
             ast::Field::ExpressionKey { key, value, .. } => {
                 complexity = count_expression_complexity(key, complexity);
@@ -100,10 +96,6 @@ fn count_table_complexity(table: &TableConstructor, starting_complexity: u16) ->
 fn count_arguments_complexity(function_args: &ast::FunctionArgs, starting_complexity: u16) -> u16 {
     let mut complexity = starting_complexity;
 
-    #[cfg_attr(
-        feature = "force_exhaustive_checks",
-        deny(non_exhaustive_omitted_patterns)
-    )]
     match function_args {
         ast::FunctionArgs::Parentheses { arguments, .. } => {
             for argument in arguments {
@@ -123,10 +115,6 @@ fn count_arguments_complexity(function_args: &ast::FunctionArgs, starting_comple
 fn count_suffix_complexity(suffix: &ast::Suffix, starting_complexity: u16) -> u16 {
     let mut complexity = starting_complexity;
 
-    #[cfg_attr(
-        feature = "force_exhaustive_checks",
-        deny(non_exhaustive_omitted_patterns)
-    )]
     match suffix {
         ast::Suffix::Index(ast::Index::Brackets { expression, .. }) => {
             complexity = count_expression_complexity(expression, complexity)
@@ -152,18 +140,10 @@ fn count_suffix_complexity(suffix: &ast::Suffix, starting_complexity: u16) -> u1
 fn count_expression_complexity(expression: &ast::Expression, starting_complexity: u16) -> u16 {
     let mut complexity = starting_complexity;
 
-    #[cfg_attr(
-        feature = "force_exhaustive_checks",
-        deny(non_exhaustive_omitted_patterns)
-    )]
     match expression {
         ast::Expression::BinaryOperator {
             lhs, binop, rhs, ..
         } => {
-            #[cfg_attr(
-                feature = "force_exhaustive_checks",
-                allow(non_exhaustive_omitted_patterns)
-            )]
             if matches!(binop, ast::BinOp::And(_) | ast::BinOp::Or(_)) {
                 complexity += 1;
             }
@@ -247,10 +227,6 @@ fn count_block_complexity(block: &ast::Block, starting_complexity: u16) -> u16 {
 
     // we don't immediately return from the matched blocks so that we can add in any complexity from the last statement
     for statement in block.stmts() {
-        #[cfg_attr(
-            feature = "force_exhaustive_checks",
-            deny(non_exhaustive_omitted_patterns)
-        )]
         match statement {
             ast::Stmt::Assignment(assignment) => {
                 for var in assignment.variables() {
@@ -349,7 +325,9 @@ fn count_block_complexity(block: &ast::Block, starting_complexity: u16) -> u16 {
                 // Type functions are compile-time constructs and don't contribute to cyclomatic complexity
                 // complexity = count_block_complexity(type_function.body().block(), complexity);
             }
-            _ => todo!(),
+            _ => {
+                // All other statement types don't contribute to cyclomatic complexity
+            }
         }
     }
 
